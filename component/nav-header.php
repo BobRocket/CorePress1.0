@@ -8,6 +8,7 @@
         $(".user-menu-main").append('<div class="m-dropdown"><i class="fa fa-angle-down"></i></div>')
 
     }
+
     function closeMenu() {
         $('body').css('overflow', 'auto');
         $(".drawer-menu-plane").removeClass("drawer-menu-plane-show");
@@ -21,6 +22,7 @@
         //$('body').css('overflow', 'hidden');
         $(".dialog-search-plane").addClass("dialog-search-plane-show");
     }
+
     function closeSearch() {
         //$('body').css('overflow', 'auto');
         $(".dialog-search-plane").removeClass("dialog-search-plane-show");
@@ -39,11 +41,11 @@
     <div class="header-logo">
         <?php
         global $set;
-        $logourl=$set['routine']['logo'];
+        $logourl = $set['routine']['logo'];
         if ($logourl == '') {
-            echo '<a href="/"><h2>CorePress</h2></a>';
-        }else{
-            echo '<a href="/"><img src="'.$logourl.'" alt=""></a>';
+            echo '<a href="' . get_bloginfo('siteurl') . '"><h2>CorePress</h2></a>';
+        } else {
+            echo '<a href="/"><img src="' . $logourl . '" alt=""></a>';
         }
         ?>
     </div>
@@ -55,9 +57,10 @@
     <div class="dialog-mask" onclick="closeSearch()"></div>
     <div class="dialog-plane">
         <h2>搜索内容</h2>
-        <form class="search-form" action="<?php echo get_bloginfo('url');?>" method="get" role="search">
+        <form class="search-form" action="<?php echo get_bloginfo('url'); ?>" method="get" role="search">
             <div class="search-form-input-plane">
-                <input type="text" class="search-keyword" name="s" placeholder="搜索内容"  value="<?php echo get_search_query(); ?>">
+                <input type="text" class="search-keyword" name="s" placeholder="搜索内容"
+                       value="<?php echo get_search_query(); ?>">
             </div>
             <div>
                 <button type="submit" class="search-submit" value="&#xf002;">搜索</button>
@@ -77,7 +80,6 @@
                 'container' => 'nav',
                 'container_class' => 'menu-header-plane',
                 'menu_class' => 'menu-header-list',
-                'fallback_cb' => false,
                 'items_wrap' => '<ul id="%1$s" class="%2$s">%3$s</ul>'
             )
         );
@@ -90,7 +92,7 @@
             ?>
             <ul class="user-menu">
                 <li>
-                    <a class="user-menu-main">用户中心</a>
+                    <a class="user-menu-main"><img class="user-avatar" width="30" height="30" src="<?php echo corepress_get_avatar_url() ?>" alt=""><span class="user-menu-name"><?php echo corepress_get_user_nickname()?></span></a>
                     <ul class="user-sub-menu">
                         <li><a href="/wp-admin/profile.php">个人中心</a></li>
                         <?php
@@ -102,17 +104,20 @@
                         }
 
                         ?>
-                        <li><a href="/">退出登录</a></li>
+                        <li><a href="<?php echo wp_logout_url(get_bloginfo('siteurl')) ?>">退出登录</a></li>
                     </ul>
                 </li>
             </ul>
             <?
         } else {
-            ?>
-            <span class="user-menu-main">
+            if ($set['user']['hideloginbtn'] != 1) {
+                ?>
+                <span class="user-menu-main">
                  <a href="<?php echo loginAndBack(); ?>"><button class="login-btn-header">登录</button></a>
             </span>
-            <?
+                <?
+            }
+
         }
         ?>
     </div>

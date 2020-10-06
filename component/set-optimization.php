@@ -156,28 +156,6 @@
     </div>
 </div>
 
-
-<div class="set-plane">
-    <div class="set-title">
-        关闭WordPress更新
-    </div>
-    <div class="set-object">
-        <el-switch
-                v-model="set.optimization.closeupdate"
-                :active-value="1"
-                :inactive-value="0"
-        >
-        </el-switch>
-    </div>
-</div>
-<div class="set-plane">
-    <div class="set-title">
-    </div>
-    <div class="set-object">
-        没有小程序等APP功能的，可以关闭
-    </div>
-</div>
-
 <div class="set-plane">
     <div class="set-title">
         禁用Emoji表情

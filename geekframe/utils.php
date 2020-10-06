@@ -6,23 +6,42 @@
 
 function file_load_js($path)
 {
-    echo "<script src=\"" . THEME_JS_PATH . "/{$path}\"></script>";
+    echo '<script src="' . THEME_JS_PATH . '/' . $path . '?v=' . THEME_VERSIONNAME . '"></script>';
 }
+
 function file_load_img($path)
 {
     echo "<img src=\"" . THEME_IMG_PATH . "/{$path}\">";
 }
+
+function file_load_face()
+{
+
+    $files = scandir(THEME_PATH . "/static/img/face");
+    foreach ($files as $v) {
+        /* if(is_file($v)){
+             $fileItem[] = $v;
+         }*/
+        if (pathinfo($v, PATHINFO_EXTENSION) == 'gif') {
+            $html = '<img class="img-pace" src="' . THEME_IMG_PATH . '/face/' . $v . '" width="30" facename="' . basename($v, ".gif") . '">' . $html;
+        }
+
+    }
+    return $html;
+}
+
 function file_load_css($path)
 {
-    echo "<link rel=\"stylesheet\" href=" . THEME_CSS_PATH . "/{$path}>";
+
+    echo '<link rel="stylesheet" href="' . THEME_CSS_PATH . '/' . $path . '?v=' . THEME_VERSIONNAME . '">';
 }
 
 function file_load_lib($path, $type)
 {
     if ($type == 'css') {
-        echo "<link rel=\"stylesheet\" href=" . THEME_LIB_PATH . "/{$path}>";
+        echo '<link rel="stylesheet" href="' . THEME_LIB_PATH . '/' . $path . '?v=' . THEME_VERSIONNAME . '">';
     } elseif ($type == 'js') {
-        echo "<script src=\"" . THEME_LIB_PATH . "/{$path}\"></script>";
+        echo '<script src="' . THEME_LIB_PATH . '/' . $path . '"></script>';
     }
 }
 
@@ -36,9 +55,41 @@ function islogin()
     return is_user_logged_in();
 }
 
-function loginAndBack()
+function loginAndBack($url = null)
 {
-    return wp_login_url('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+    if ($url == null) {
+        return wp_login_url('//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+    }else{
+        return wp_login_url($url);
+
+    }
+
+}
+
+function corepress_get_user_nickname($user_id = null)
+{
+    if ($user_id == null) {
+        $currentUser = wp_get_current_user();
+        $name = $currentUser->user_nicename;
+    } else {
+        $user = get_userdata($user_id);
+        $name = $user->user_nicename;
+    }
+    return $name;
+}
+
+function corepress_get_avatar_url($email = null, $size = 60)
+{
+
+    if ($email == null) {
+        $currentUser = wp_get_current_user();
+        $avatarurl = get_avatar_url($currentUser->user_email, array('size' => $size));
+    } else {
+        $avatarurl = get_avatar_url($email, array('size' => $size));
+    }
+
+    return $avatarurl;
+
 }
 
 function isadmin($user_id = null)
@@ -85,47 +136,69 @@ function diffBetweenTwoDay($pastDay)
     }
     return $dayC;
 }
-if ( ! function_exists( 'utf8_excerpt' ) ) :
-    function utf8_excerpt($str, $len){
-        $str = strip_tags( str_replace( array( "\n", "\r" ), ' ', $str ) );
-        if(function_exists('mb_substr')){
+
+if (!function_exists('utf8_excerpt')) :
+    function utf8_excerpt($str, $len)
+    {
+        $str = strip_tags(str_replace(array("\n", "\r"), ' ', $str));
+        if (function_exists('mb_substr')) {
             $excerpt = mb_substr($str, 0, $len, 'utf-8');
-        }else{
+        } else {
             preg_match_all("/[x01-x7f]|[xc2-xdf][x80-xbf]|xe0[xa0-xbf][x80-xbf]|[xe1-xef][x80-xbf][x80-xbf]|xf0[x90-xbf][x80-xbf][x80-xbf]|[xf1-xf7][x80-xbf][x80-xbf][x80-xbf]/", $str, $ar);
             $excerpt = join('', array_slice($ar[0], 0, $len));
         }
 
-        if(trim($str)!=trim($excerpt)){
+        if (trim($str) != trim($excerpt)) {
             $excerpt .= '...';
         }
         return $excerpt;
     }
 endif;
 
-function format_date($time){
+function format_date($time)
+{
     global $options, $post;
     $p_id = isset($post->ID) ? $post->ID : 0;
     $q_id = get_queried_object_id();
     $single = $p_id == $q_id && is_single();
-    if(isset($options['time_format']) && $options['time_format']=='0'){
-        return date(get_option('date_format').($single?' '.get_option('time_format'):''), $time);
+    if (isset($options['time_format']) && $options['time_format'] == '0') {
+        return date(get_option('date_format') . ($single ? ' ' . get_option('time_format') : ''), $time);
     }
     $t = current_time('timestamp') - $time;
     $f = array(
-        '86400'=>'天',
-        '3600'=>'小时',
-        '60'=>'分钟',
-        '1'=>'秒'
+        '86400' => '天',
+        '3600' => '小时',
+        '60' => '分钟',
+        '1' => '秒'
     );
-    if($t==0){
+    if ($t == 0) {
         return '1秒前';
-    }else if( $t >= 604800 || $t < 0){
-        return date(get_option('date_format').($single?' '.get_option('time_format'):''), $time);
-    }else{
-        foreach ($f as $k=>$v)    {
-            if (0 !=$c=floor($t/(int)$k)) {
-                return $c.$v.'前';
+    } else if ($t >= 604800 || $t < 0) {
+        return date(get_option('date_format') . ($single ? ' ' . get_option('time_format') : ''), $time);
+    } else {
+        foreach ($f as $k => $v) {
+            if (0 != $c = floor($t / (int)$k)) {
+                return $c . $v . '前';
             }
         }
     }
 }
+
+function get_share_url($type, $title, $summary)
+{
+    global $set;
+    if ($set['seo']['description'] != null) {
+        $description = $set['seo']['description'];
+    } else {
+        $description = get_bloginfo('description');
+    }
+    $url = urlencode(get_bloginfo('url'));
+    if ($type == 'qq') {
+        return 'https://connect.qq.com/widget/shareqq/index.html?url=' . $url . '&title=' . urlencode($title) . '&source=' . urlencode(get_bloginfo('name')) . '&desc=' . urlencode($description) . '&pics=&summary=' . urlencode($summary);
+    } else if ($type == 'weibo') {
+        return 'https://service.weibo.com/share/share.php?url=' . $url . '&title=' . urlencode($summary) . '&pic=&appkey=&searchPic=true';
+    } else if ($type = 'qzone') {
+        return 'http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' . $url . '&title=' . urlencode($title) . '&pics=&summary=' . urlencode($summary);
+    }
+}
+

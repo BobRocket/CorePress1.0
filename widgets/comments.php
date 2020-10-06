@@ -110,7 +110,7 @@ class CorePress_comments_widget extends WP_Widget
                         </div>
                     </div>
                     <div class="widger-comment-excerpt">
-                        <p><?php echo utf8_excerpt($comment->comment_content, 55); ?></p>
+                        <p><?php echo corepress_comment_face((utf8_excerpt($comment->comment_content, 55))); ?></p>
                     </div>
                     <p class="widger-comment-postlink">
                         评论于 <a href="<?php echo get_permalink($comment->comment_post_ID); ?>" target="_blank"><?php echo get_the_title($comment->comment_post_ID);?></a>

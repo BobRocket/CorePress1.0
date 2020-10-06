@@ -50,10 +50,28 @@
 <div class="set-plane set-plane-note">
     <div class="set-title"></div>
     <div class="set-object">
-        文章没有特色图片的时候，显示本图片，建议大小 240 x 160
+        文章没有特色图片的时候，显示本图片，建议大小 240 x 160 的倍数
     </div>
 </div>
-
+<div class="set-plane">
+    <div class="set-title">
+        自动缩略图
+    </div>
+    <div class="set-object">
+        <el-switch
+                v-model="set.routine.autothumbnail"
+                :active-value="1"
+                :inactive-value="0"
+        >
+        </el-switch>
+    </div>
+</div>
+<div class="set-plane set-plane-note">
+    <div class="set-title"></div>
+    <div class="set-object">
+        文章里面有图片的情况下，自动读取第一张图片作为缩略图
+    </div>
+</div>
 <div class="set-plane">
     <div class="set-title">
         底部图片1
@@ -122,5 +140,19 @@
     <div class="set-object">
         <el-input placeholder="" v-model="set.routine.icp" size="small">
         </el-input>
+    </div>
+</div>
+<h3>文章设置</h3>
+<div class="set-plane">
+    <div class="set-title">
+        文章新窗口打开
+    </div>
+    <div class="set-object">
+        <el-switch
+                v-model="set.routine.opennewlink"
+                :active-value="1"
+                :inactive-value="0"
+        >
+        </el-switch>
     </div>
 </div>

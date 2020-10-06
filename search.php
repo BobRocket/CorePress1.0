@@ -2,10 +2,8 @@
 <html lang="zh">
 <head>
     <?php get_header(); ?>
-
 </head>
 <body>
-
 <div id="app">
     <header>
         <div class="header-main-plane">
@@ -16,6 +14,7 @@
             </div>
         </div>
     </header>
+    <div style="min-height: 80px;width: 100%;"></div>
     <main class="container">
         <div class="html-main">
              <?php

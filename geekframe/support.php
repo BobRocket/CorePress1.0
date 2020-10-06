@@ -3,8 +3,9 @@
  * 功能支持模块
  */
 //支持缩略图
-
+global $set;
 add_theme_support('post-thumbnails');
+set_post_thumbnail_size(480, 300);
 //链接支持
 add_filter('pre_option_link_manager_enabled', '__return_true');
 
@@ -74,12 +75,12 @@ function geekpress_page_setting()
 
 
 //使用字体图标
-function corePress_get_dashicons()
+/*function corePress_get_dashicons()
 {
     wp_enqueue_style('dashicons');
 }
 
-add_action('wp_enqueue_scripts', 'corePress_get_dashicons');
+add_action('wp_enqueue_scripts', 'corePress_get_dashicons');*/
 
 //禁止转义引号字符
 remove_filter('the_content', 'wptexturize'); // 禁止英文引号转义为中文引号
@@ -142,6 +143,19 @@ if ($set['optimization']['closeemoji'] === 1) {
     remove_filter('wp_mail', 'wp_staticize_emoji_for_email');
 }
 
+if ($set['comment']['encomment'] == 1) {
+    function scp_comment_post($incoming_comment)
+    {
+        $pattern = '/[一-龥]/u';
+        // 禁止全英文评论
+        if (!preg_match($pattern, $incoming_comment['comment_content'])) {
+            wp_die("您的评论中必须包含汉字!");
+        }
+        return ($incoming_comment);
+    }
+
+    add_filter('preprocess_comment', 'scp_comment_post');
+}
 
 function CorePress_replace_avatar($avatarUrl)
 {
@@ -176,11 +190,9 @@ function copay_footer_admin($text)
         if ($set['info']['newversion'] != THEME_VERSION) {
             $url = '，<a href="' . $set['info']['downurl'] . '" target="_blank">立即更新</a>';
         }
-    }else
-    {
+    } else {
         $url = '，已关闭更新';
     }
-
 
     return "{$text}<p>CorePress主题，当前版本：" . THEME_VERSIONNAME . "，最新版本：{$set['info']['newversionname']}{$url}</p>";
 
@@ -208,10 +220,221 @@ add_action('wp_dashboard_setup', 'corepress_add_dashboard_widgets');
 function corepress_updateTheme()
 {
     global $set;
-    $url = 'http://api.lovestu.com/theme/corepress/version.json';
-    $request = new WP_Http;
-    $result = $request->request($url);
-    $json = json_decode($result['body'], true);
-    $set['info']['newversionname'] = $json['versionname'];
-    $set['info']['newversion'] = $json['version'];
+    $lasttime = get_option('corepress_updatetheme');
+    if ($lasttime == false) {
+        update_option('corepress_updatetheme', time());
+    }
+    if (time() - $lasttime > 60 * 60) {
+        $url = 'http://theme.lovestu.com/version.php?site=' . get_bloginfo('siteurl') . '&n=1&v=' . THEME_VERSION;
+        $request = new WP_Http;
+        $result = $request->request($url);
+        if (!is_wp_error($result)) {
+            $json = json_decode($result['body'], true);
+            if (isset($json)) {
+                $set['info']['newversionname'] = $json['versionname'];
+                $set['info']['newversion'] = $json['version'];
+                $setdata['option'] = json_encode($set);
+                options::getInstance()->saveData($setdata);
+            }
+        }
+        update_option('corepress_updatetheme', time());
+    }
+}
+
+function corepress_comment_face($incoming_comment)
+{
+    $pattern = '/\[f=(.*?)\]/';
+    $isMatched = preg_match_all($pattern, $incoming_comment, $match);
+    if ($isMatched == 0) {
+        return $incoming_comment;
+    }
+    $path = THEME_PATH . "/static/img/face/";
+    foreach ($match[1] as $facename) {
+        if (file_exists($path . $facename . '.gif')) {
+            $incoming_comment = str_replace("[f={$facename}]", '<img src="' . THEME_IMG_PATH . '/face/' . $facename . '.gif" width="30">', $incoming_comment);
+        }
+    }
+    return $incoming_comment;
+}
+
+
+function corepress_loginurl($url)
+{
+    global $set;
+    $query = parse_url($url);
+    parse_str($query['query'], $output);
+    if ($set['user']['loginpage'] == 1) {
+        return $set['user']['lgoinpageurl'].'?re='. $output['redirect_to'];
+    }
+    return $url;
+}
+
+function corepress_addbutton()
+{
+//判断用户是否有编辑文章和页面的权限
+    if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) {
+        return;
+    }
+    //判断用户是否使用可视化编辑器
+    if (get_user_option('rich_editing') == 'true') {
+        file_load_js('jquery.min.js');
+        file_load_js('vue.min.js');
+        file_load_css('admin.css');
+        file_load_lib('element/index.css', 'css');
+        file_load_lib('element/index.js', 'js');
+        file_load_js('tools.js');
+        file_load_css('editor-window.css');
+        file_load_lib('layer/layer.js', 'js');
+        file_load_js('editor-functions.js');
+        add_filter('mce_external_plugins', 'corepress_add_editor_plugin');
+    }
+}
+
+function corepress_add_editor_plugin()
+{
+    $plugin_array['gh-addShortCode'] = THEME_JS_PATH . '/editorButton.js';
+    return $plugin_array;
+}
+
+function corepress_add_media_button()
+{
+    echo '<a href="javascript:;"  class="button corepress-btn">CorePress短代码</a>';
+}
+
+add_action('media_buttons', 'corepress_add_media_button');
+add_action('edit_form_top', 'corepress_addbutton');
+add_filter('comment_text', 'corepress_comment_face');
+add_filter('comment_text_rss', 'corepress_comment_face');
+add_filter('login_url', 'corepress_loginurl', 1);
+
+/** 编辑器取消屏蔽功能
+ * @param $initArray
+ * @return mixed
+ */
+function mod_mce($initArray)
+{
+    $initArray['verify_html'] = false;
+    return $initArray;
+}
+
+add_filter('tiny_mce_before_init', 'mod_mce');
+add_action('add_meta_boxes', 'corepress_add_meta_box');
+function corepress_add_meta_box()
+{
+    add_meta_box('corepress_post_meta', 'CorePress文章设置', 'corepress_meta_box_form', 'page', 'advanced', 'high');
+    add_meta_box('corepress_post_meta', 'CorePress文章设置', 'corepress_meta_box_form', 'post', 'advanced', 'high');
+}
+
+function corepress_meta_box_form($post)
+{
+    // 创建临时隐藏表单，为了安全
+    wp_nonce_field('corepress_meta_box', 'corepress_meta_box_nonce');
+    // 获取之前存储的值
+    $corepress_post_meta['set'] = json_decode(get_post_meta($post->ID, 'corepress_post_meta', true), true);
+
+    if (!isset($corepress_post_meta['set']['catalog'])) {
+        $corepress_post_meta['set']['catalog'] = 0;
+    }
+    if (!isset($corepress_post_meta['set']['seo']['open'])) {
+        $corepress_post_meta['set']['seo']['open'] = 0;
+    }
+    if (!isset($corepress_post_meta['set']['seo']['keywords'])) {
+        $corepress_post_meta['set']['seo']['keywords'] = '';
+    }
+    if (!isset($corepress_post_meta['set']['seo']['description'])) {
+        $corepress_post_meta['set']['seo']['description'] = '';
+    }
+    if (!isset($corepress_post_meta['set']['postshow'])) {
+        $corepress_post_meta['set']['postshow'] = '0';
+    }
+    ?>
+    <div id="corepress-post-meta">
+        <input type="hidden" name="corepress_post_meta" :value="JSON.stringify(set)">
+        <div class="set-plane">
+            <div class="set-title">
+                开启文章目录
+            </div>
+            <div class="set-object">
+                <el-switch
+                        v-model="set.catalog"
+                        :active-value="1"
+                        :inactive-value="0"
+                >
+                </el-switch>
+            </div>
+        </div>
+        <h3>SEO设置</h3>
+        <div class="set-plane">
+            <div class="set-title">
+                开启独立SEO
+            </div>
+            <div class="set-object">
+                <el-switch
+                        v-model="set.seo.open"
+                        :active-value="1"
+                        :inactive-value="0"
+                >
+                </el-switch>
+            </div>
+        </div>
+        <div class="set-plane">
+            <div class="set-title">
+                SEO关键字
+            </div>
+            <div class="set-object">
+                <el-input placeholder="" v-model="set.seo.keywords" size="small">
+                </el-input>
+            </div>
+        </div>
+        <div class="set-plane set-plane-nocenter">
+            <div class="set-title">
+                页面描述
+            </div>
+            <div class="set-object">
+                <el-input
+                        type="textarea"
+                        :rows="5"
+                        placeholder="请输入内容"
+                        v-model="set.seo.description">
+                </el-input>
+            </div>
+        </div>
+        <h3>显示设置</h3>
+        <div class="set-plane">
+            <div class="set-title">
+                默认列表文章显示方式
+            </div>
+            <div class="set-object">
+                <el-select v-model="set.postshow" placeholder="请选择" size="mini">
+                    <el-option
+                            v-for="item in postshowlist"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                    </el-option>
+                </el-select>
+            </div>
+        </div>
+    </div>
+    <script>
+        var set = JSON.parse('<?php echo json_encode($corepress_post_meta)?>');
+        set = set.set;
+        var vue = new Vue({
+                el: '#corepress-post-meta',
+                data: {
+                    postshowlist: [{
+                        value: '0',
+                        label: '默认'
+                    },
+                        {
+                            value: '1',
+                            label: '长条横幅'
+                        }
+                    ],
+                    set
+                }
+            })
+        ;
+    </script>
+    <?php
 }

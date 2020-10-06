@@ -15,6 +15,7 @@
             </div>
         </div>
     </header>
+    <div style="min-height: 80px;width: 100%;"></div>
     <main class="container">
         <div class="html-main">
             <?php
