@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # WordPress主题：CorePress v4.1.1
 
 [![img](https://www.lovestu.com/wp-content/uploads/2021/03/corepress4js01.webp)](https://www.lovestu.com/wp-content/uploads/2021/03/corepress4js01.webp)
@@ -6,10 +5,7 @@
 CorePress是果核剥壳站长开发的一款WordPress主题，适合个人网站，极客网站，CMS等多种站点使用。
 =======
 WordPress主题：CorePress v4.1.1
->>>>>>> 7aaffedb5883a85a3e42a472ec7c44e7dd3b4f90
 
-
-<<<<<<< HEAD
 - 超小体积
 
 主题体积小于2m，代码精，功能全，颜值高，兼容好。
@@ -68,9 +64,6 @@ webp，SVG支持 支持webp，SVG上传、显示。
 多种功能模块
 防红模块，禁止文章复制，WordPress邮件配置，图片灯箱
 
-  
->>>>>>> 7aaffedb5883a85a3e42a472ec7c44e7dd3b4f90
-
 更新日志
 v4.1.1
 
@@ -89,8 +82,6 @@ v4.1.1
 修复文章下一篇上一篇无法读取文中非特色图片bug
 
 修复部分主机报致命错误
-
-<<<<<<< HEAD
 webp，SVG支持 支持webp，SVG上传、显示。
 
 - 多个小工具
@@ -132,7 +123,6 @@ css优化
 ## 相关说明
 =======
 css优化
->>>>>>> 7aaffedb5883a85a3e42a472ec7c44e7dd3b4f90
 
 相关说明
 提示，本主题为WordPress主题，需要在WordPress程序上配套使用。
