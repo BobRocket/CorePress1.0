@@ -9,15 +9,67 @@ function file_load_js($path)
     echo '<script src="' . THEME_JS_PATH . '/' . $path . '?v=' . THEME_VERSIONNAME . '"></script>';
 }
 
+/**
+ * combineURL
+ * 拼接url
+ * @param string $baseURL 基于的url
+ * @param array $keysArr 参数列表数组
+ * @return string           返回拼接的url
+ */
+function combineURL($baseURL, $keysArr)
+{
+    $combined = $baseURL . "?";
+    $valueArr = array();
+
+    foreach ($keysArr as $key => $val) {
+        $valueArr[] = "$key=$val";
+    }
+
+    $keyStr = implode("&", $valueArr);
+    $combined .= ($keyStr);
+
+    return $combined;
+}
+
+
+function load_js_parameter($name, $arr)
+{
+    echo '<script>var ' . $name . '=JSON.parse(' . "'" . json_encode($arr) . "'" . ')</script>';
+}
+
 function file_load_img($path)
 {
     echo "<img src=\"" . THEME_IMG_PATH . "/{$path}\">";
+}
+
+function file_get_img_url($path)
+{
+    return THEME_IMG_PATH . "/" . $path;
+}
+
+function file_echo_svg($path)
+{
+
+    global $wp_filesystem;
+    $svg = $wp_filesystem->get_contents(THEME_PATH . '/static/img/' . $path);
+    print_r($svg);
+    //readfile(THEME_PATH . '/static/img/' . $path);
+}
+
+function file_get_svg($path)
+{
+
+    global $wp_filesystem;
+    $svg = $wp_filesystem->get_contents(THEME_PATH . '/static/img/' . $path);
+    return $svg;
+    //readfile(THEME_PATH . '/static/img/' . $path);
 }
 
 function file_load_face()
 {
 
     $files = scandir(THEME_PATH . "/static/img/face");
+    $html = null;
     foreach ($files as $v) {
         /* if(is_file($v)){
              $fileItem[] = $v;
@@ -59,7 +111,7 @@ function loginAndBack($url = null)
 {
     if ($url == null) {
         return wp_login_url('//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-    }else{
+    } else {
         return wp_login_url($url);
 
     }
@@ -70,10 +122,10 @@ function corepress_get_user_nickname($user_id = null)
 {
     if ($user_id == null) {
         $currentUser = wp_get_current_user();
-        $name = $currentUser->user_nicename;
+        $name = $currentUser->display_name;
     } else {
         $user = get_userdata($user_id);
-        $name = $user->user_nicename;
+        $name = $user->display_name;
     }
     return $name;
 }
@@ -202,3 +254,351 @@ function get_share_url($type, $title, $summary)
     }
 }
 
+function corepress_replace_copyright($str)
+{
+    global $post;
+    $author_name = get_the_author();
+    $post_url = get_permalink();
+
+    $str = str_replace('<#username#>', $author_name, $str);
+    $str = str_replace('<#url#>', $post_url, $str);
+
+    return $str;
+}
+
+function corepress_jmp_message($message, $jumpUrl)
+{
+    global $set;
+    ?>
+    <!doctype html>
+    <html lang="zh">
+    <head>
+        <?php get_header(); ?>
+    </head>
+    <body>
+    <?php
+    file_load_css('login-plane.css');
+    ?>
+    <div id="app" class="login-background">
+        <header>
+            <div class="header-main-plane">
+                <div class="header-main container">
+                    <?php
+                    get_template_part('component/nav-header');
+                    ?>
+                </div>
+            </div>
+        </header>
+        <div class="header-zhanwei" style="min-height: 80px;width: 100%;"></div>
+        <main class="container">
+            <div class="html-main"
+                 style="background: #fff;padding: 20px;height: 100%;margin-bottom: 20px;font-size: 20px">
+                <div>
+                    <?php echo $message ?>
+                    <div><a href="<?php echo $jumpUrl ?>">点击这儿</a>直接跳转</div>
+                </div>
+            </div>
+        </main>
+        <script>
+            setTimeout(function () {
+                location.replace('<?php echo $jumpUrl?>')
+            }, 3000)</script>
+        <footer>
+            <?php
+            wp_footer();
+            get_footer(); ?>
+        </footer>
+    </div>
+    </body>
+    </html>
+    <?php
+}
+
+function curPageURL()
+{
+    $pageURL = 'http';
+
+    if ($_SERVER["HTTPS"] == "on") {
+        $pageURL .= "s";
+    }
+    $pageURL .= "://";
+
+    $this_page = $_SERVER["REQUEST_URI"];
+
+    // 只取 ? 前面的内容
+    if (strpos($this_page, "?") !== false) {
+        $this_pages = explode("?", $this_page);
+        $this_page = reset($this_pages);
+    }
+
+    if ($_SERVER["SERVER_PORT"] != "80") {
+        $pageURL .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . $this_page;
+    } else {
+        $pageURL .= $_SERVER["SERVER_NAME"] . $this_page;
+    }
+    return $pageURL;
+}
+
+/**
+ *参数验证
+ */
+function parameter_verification($arr, $type = 0)
+{
+    $re_arry = array();
+    foreach ($arr as $item) {
+        if ($type == 1) {
+            if (!isset($_POST[$item])) {
+                $json['code'] = 0;
+                $json['msg'] = '参数错误';
+                wp_die(json_encode($json));
+            } else {
+                $re_arry[$item] = $_POST[$item];
+            }
+        } else {
+            if (!isset($_GET[$item])) {
+                $json['code'] = 0;
+                $json['msg'] = '参数错误';
+                wp_die(json_encode($json));
+            } else {
+                $re_arry[$item] = $_GET[$item];
+            }
+        }
+
+    }
+    return $re_arry;
+}
+
+function ajax_die($msg, $code = 0)
+{
+    $json['code'] = $code;
+    $json['msg'] = $msg;
+    wp_die(json_encode($json));
+}
+
+function is_wx_qq()
+{
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    if (strpos($user_agent, 'MicroMessenger') == false && strpos($user_agent, 'QQ/') == false) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function loadiconfont_by_cdn()
+{
+    global $set;
+    if ($set['optimization']['iconfontcdn'] == 'JsDelivr') {
+        echo '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ghboke/corepresscdn@master/static/lib/fontawesome5pro/css/all.min.css?v=' . THEME_VERSIONNAME . '">';
+
+    } else {
+        file_load_lib('fontawesome5/css/all.min.css', 'css');
+    }
+
+}
+
+function corepress_pinyin_long($zh)
+{
+    //获取整条字符串汉字拼音首字母
+    $ret = "";
+    $zh = preg_replace('# #', '', $zh);
+    $s1 = iconv("UTF-8", "gb2312", $zh);
+    $s2 = iconv("gb2312", "UTF-8", $s1);
+    if ($s2 == $zh) {
+        $zh = $s1;
+    }
+    for ($i = 0; $i < strlen($zh); $i++) {
+        $s1 = substr($zh, $i, 1);
+        $p = ord($s1);
+        if ($p > 160) {
+            $s2 = substr($zh, $i++, 2);
+            $ret .= corepress_getFirstPing($s2);
+        } else {
+            $ret .= $s1;
+        }
+    }
+    return $ret;
+}
+
+function replace_symbol($str)
+{
+    $str = str_replace('？', '', $str);
+    $str = str_replace('`', '', $str);
+    $str = str_replace('·', '', $str);
+    $str = str_replace('~', '', $str);
+    $str = str_replace('!', '', $str);
+    $str = str_replace('！', '', $str);
+    $str = str_replace('@', '', $str);
+    $str = str_replace('#', '', $str);
+    $str = str_replace('$', '', $str);
+    $str = str_replace('￥', '', $str);
+    $str = str_replace('%', '', $str);
+    $str = str_replace('^', '', $str);
+    $str = str_replace('……', '', $str);
+    $str = str_replace('&', '', $str);
+    $str = str_replace('*', '', $str);
+    $str = str_replace('(', '', $str);
+    $str = str_replace(')', '', $str);
+    $str = str_replace('（', '', $str);
+    $str = str_replace('）', '', $str);
+    $str = str_replace('-', '', $str);
+    $str = str_replace('_', '', $str);
+    $str = str_replace('——', '', $str);
+    $str = str_replace('+', '', $str);
+    $str = str_replace('=', '', $str);
+    $str = str_replace('|', '', $str);
+    $str = str_replace('\\', '', $str);
+    $str = str_replace('[', '', $str);
+    $str = str_replace(']', '', $str);
+    $str = str_replace('【', '', $str);
+    $str = str_replace('】', '', $str);
+    $str = str_replace('{', '', $str);
+    $str = str_replace('}', '', $str);
+    $str = str_replace(';', '', $str);
+    $str = str_replace('；', '', $str);
+    $str = str_replace(':', '', $str);
+    $str = str_replace('：', '', $str);
+    $str = str_replace('\'', '', $str);
+    $str = str_replace('"', '', $str);
+    $str = str_replace('“', '', $str);
+    $str = str_replace('”', '', $str);
+    $str = str_replace(',', '', $str);
+    $str = str_replace('，', '', $str);
+    $str = str_replace('<', '', $str);
+    $str = str_replace('>', '', $str);
+    $str = str_replace('《', '', $str);
+    $str = str_replace('》', '', $str);
+    $str = str_replace('.', '', $str);
+    $str = str_replace('。', '', $str);
+    $str = str_replace('/', '', $str);
+    $str = str_replace('、', '', $str);
+    $str = str_replace('?', '', $str);
+    $str = str_replace('？', '', $str);
+    return trim($str);
+}
+
+/**
+ * 获取首字符拼音首字母
+ * 判断是否为汉字 !preg_match('/^[\x{4e00}-\x{9fa5}]+$/u', $s0)
+ * 已知 “泸”，无法识别
+ */
+function corepress_getFirstPing($str)
+{
+    $s0 = mb_substr($str, 0, 1, 'utf-8');
+    $fchar = ord($s0[0]);
+    if ($fchar >= ord("A") and $fchar <= ord("z")) return strtoupper($s0[0]);
+    $s1 = iconv("UTF-8", "gb2312", $s0);
+    $s2 = iconv("gb2312", "UTF-8", $s1);
+    if ($s2 == $s0) {
+        $s = $s1;
+    } else {
+        $s = $s0;
+    }
+    $asc = ord($s[0]) * 256 + ord($s[0]) - 65536;
+    if ($asc >= -20319 && $asc <= -20284) return "A";
+    if ($asc >= -20283 && $asc <= -19776) return "B";
+    if ($asc >= -19775 && $asc <= -19219) return "C";
+    if ($asc >= -19218 && $asc <= -18711) return "D";
+    if ($asc >= -18710 && $asc <= -18527) return "E";
+    if ($asc >= -18526 && $asc <= -18240) return "F";
+    if ($asc >= -18239 && $asc <= -17923) return "G";
+    if ($asc >= -17922 && $asc <= -17418) return "H";
+    if ($asc >= -17922 && $asc <= -17418) return "I";
+    if ($asc >= -17417 && $asc <= -16475) return "J";
+    if ($asc >= -16474 && $asc <= -16213) return "K";
+    if ($asc >= -16212 && $asc <= -15641) return "L";
+    if ($asc >= -15640 && $asc <= -15166) return "M";
+    if ($asc >= -15165 && $asc <= -14923) return "N";
+    if ($asc >= -14922 && $asc <= -14915) return "O";
+    if ($asc >= -14914 && $asc <= -14631) return "P";
+    if ($asc >= -14630 && $asc <= -14150) return "Q";
+    if ($asc >= -14149 && $asc <= -14091) return "R";
+    if ($asc >= -14090 && $asc <= -13319) return "S";
+    if ($asc >= -13318 && $asc <= -12839) return "T";
+    if ($asc >= -12838 && $asc <= -12557) return "W";
+    if ($asc >= -12556 && $asc <= -11848) return "X";
+    if ($asc >= -11847 && $asc <= -11056) return "Y";
+    if ($asc >= -11055 && $asc <= -10247) return "Z";
+    return $s0;
+}
+
+function the_breadcrumb()
+{
+    echo '<span class="corepress-crumbs-ul">';
+    if (!is_home()) {
+        echo '<li><a href="';
+        echo get_option('home');
+        echo '">';
+        echo '<i class="fas fa-home"></i> 主页';
+        echo "</a></li>";
+        if (is_category() || is_single()) {
+            echo '<li>';
+            the_category(' </li><li> ');
+            if (is_single()) {
+                echo "</li>";
+            }
+        } elseif (is_page()) {
+            echo '<li>';
+            echo the_title();
+            echo '</li>';
+        }
+    } elseif (is_tag()) {
+        single_tag_title();
+    } elseif (is_day()) {
+        echo "<li>Archive for ";
+        the_time('F jS, Y');
+        echo '</li>';
+    } elseif (is_month()) {
+        echo "<li>Archive for ";
+        the_time('F, Y');
+        echo '</li>';
+    } elseif (is_year()) {
+        echo "<li>Archive for ";
+        the_time('Y');
+        echo '</li>';
+    } elseif (is_author()) {
+        echo "<li>Author Archive";
+        echo '</li>';
+    } elseif (isset($_GET['paged']) && !empty($_GET['paged'])) {
+        echo "<li>Blog Archives";
+        echo '</li>';
+    } elseif (is_search()) {
+        echo "<li>Search Results";
+        echo '</li>';
+    }
+    echo '</span>';
+}
+
+function corepress_avatar_dir_init()
+{
+    global $wp_filesystem;
+    if (!is_dir(AVATAR_DIR)) {
+        $wp_filesystem->mkdir(AVATAR_DIR, 0700);
+    }
+}
+
+function corepress_can_thirdparty($type = '')
+{
+    global $set;
+    if ($set['user']['thirdparty_login'] != 1) {
+        die('未开通第三方登录');
+    }
+    if ($type == 'qq') {
+        if ($set['user']['thirdparty_login'] != 1) {
+            if ($set['user']['thirdparty_login_qq']['open'] != 1) {
+                die('未开通QQ登录');
+            }
+
+        }
+    }
+}
+
+function corepress_get_current_category_id()
+{
+    $current_category = single_cat_title('', false);//获得当前分类目录名称
+    return get_cat_ID($current_category);//获得当前分类目录 ID
+}
+function corepress_replace_gravatar($url,$avatarUrl){
+    $avatarUrl = str_replace(array("secure.gravatar.com/avatar", "www.gravatar.com/avatar", "0.gravatar.com/avatar", "1.gravatar.com/avatar", "2.gravatar.com/avatar"), $url, $avatarUrl);
+    return $avatarUrl;
+}

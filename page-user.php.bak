@@ -1,0 +1,72 @@
+<?php
+// TEMPLATE NAME: CorrPress用户个人中心
+if (!isset($_GET['login'])) die('参数错误');
+$loginname = $_GET['login'];
+$user = get_user_by('login',$loginname);
+if ($user == false) {
+    die('用户名错误');
+}
+global $set;
+?>
+<!doctype html>
+<html lang="zh">
+<head>
+    <?php get_header(); ?>
+</head>
+<body>
+<?php
+file_load_css('login-plane.css');
+?>
+<div id="app">
+    <header>
+        <div class="header-main-plane">
+            <div class="header-main container">
+                <?php
+                get_template_part('component/nav-header');
+                ?>
+            </div>
+        </div>
+    </header>
+    <div class="header-zhanwei" style="min-height: 80px;width: 100%;"></div>
+
+    <main class="container">
+        <div class="userinfo-plane">
+            <?php
+            ?>
+            <div class="userinfo-infoplnae">
+                <div>
+                    <img class="user-avatar" width="98" height="98"
+                         src="<?php echo corepress_get_avatar_url($user->user_email) ?>" alt="">
+                </div>
+                <div style="font-size: 20px">
+                    <?php echo $user->display_name ?>
+                </div>
+            </div>
+            <div class="userinfo-metas-plane">
+                <div class="userinfo-tabs">
+                    <?php
+                    ?>
+                    <div class="userinfo-tabs-item userinfo-tabs-item-active">文章</div>
+                    <div class="userinfo-tabs-item">评论</div>
+                    <div class="userinfo-tabs-item">收藏</div>
+                </div>
+                <div class="userinfo-user-plane">
+                    
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+
+    </script>
+
+    <footer>
+        <?php
+        wp_footer();
+        get_footer(); ?>
+    </footer>
+</div>
+</body>
+</html>
+

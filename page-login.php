@@ -1,10 +1,15 @@
 <?php
 // TEMPLATE NAME: CorrPress自定义登录页面
-if (islogin()) {
-    header("Location: /");
+if (islogin() && !isset($_GET['bind'])) {
+    header("Location: " . get_bloginfo('url'));
     exit();
 }
+
+
 global $set;
+require_once(FRAMEWORK_PATH . '/thirdparty/thirdpartylogin.php');
+
+
 ?>
 <!doctype html>
 <html lang="zh">
@@ -16,7 +21,6 @@ global $set;
 file_load_css('login-plane.css');
 ?>
 <div id="app" class="login-background">
-    <?php echo get_bloginfo('siteurl') ?>
     <header>
         <div class="header-main-plane">
             <div class="header-main container">
@@ -71,6 +75,16 @@ if ($set['user']['lgoinpageimg'] != null) {
                         <label><input type="checkbox" id="remember" name="remember" value="true">记住我的登录状态</label>
                         <a href="<?php echo wp_lostpassword_url() ?>">忘记密码?</a>
                     </div>
+                    <div class="thirdparty-plane">
+                        <?php if ($set['user']['thirdparty_login'] == 1) {
+                            if ($set['user']['thirdparty_login_qq']['open'] == 1) {
+                                ?>
+                                <span class="login-thirdparty-btn"><a
+                                            href="<?php echo home_url(add_query_arg(array('thirdparty' => 'qq'))); ?>"><?php file_load_img('icons\QQ.svg'); ?>QQ登录</a></span>
+                                <?php
+                            }
+                        } ?>
+                    </div>
                     <div>
                         <button class="login-button" id="btn-login">登录</button>
                     </div>
@@ -83,6 +97,16 @@ if ($set['user']['lgoinpageimg'] != null) {
             recodeimg();
         });
         $('#btn-login').click(() => {
+            login();
+        })
+        $('.input-code,.input-pass').bind('keypress', function (event) {
+            console.log(event.keyCode);
+            if (event.keyCode == "13") {
+                login();
+            }
+        });
+
+        function login() {
             var user = $('input[name="user"]').val();
             var pass = $('input[name="pass"]').val();
             var code = $('input[name="code"]').val();
@@ -103,7 +127,7 @@ if ($set['user']['lgoinpageimg'] != null) {
                 if (obj) {
                     if (obj.code === 1) {
                         $('#login-note').text('登录成功，跳转中');
-                        window.location.href = getQueryVariable('re') ? getQueryVariable('re') : '/';
+                        window.location.href = getQueryVariable('redirect_to') ? decodeURIComponent(getQueryVariable('redirect_to')) : '/';
                     } else {
                         $('#login-note').text(obj.msg);
                         recodeimg();
@@ -112,7 +136,7 @@ if ($set['user']['lgoinpageimg'] != null) {
 
                 }
             })
-        })
+        }
 
         function recodeimg() {
             $('.img-code').attr('src', '<?php echo FRAMEWORK_URI . "/VerificationCode.php?t=" . time() ?>');

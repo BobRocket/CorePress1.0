@@ -1,4 +1,26 @@
 <h3>SEO开关</h3>
+
+<div class="set-plane">
+    <div class="set-title">
+        开启分类目录SEO功能
+    </div>
+    <div class="set-object">
+        <el-switch
+                v-model="set.seo.catseo"
+                :active-value="1"
+                :inactive-value="0"
+        >
+        </el-switch>
+    </div>
+</div>
+<div class="set-plane">
+    <div class="set-title">
+    </div>
+    <div class="set-object">
+        分类SEO是单独的开关
+    </div>
+</div>
+
 <div class="set-plane">
     <div class="set-title">
         开启SEO功能
@@ -13,6 +35,7 @@
     </div>
 </div>
 
+
 <div class="set-plane">
     <div class="set-title">
     </div>
@@ -20,6 +43,9 @@
         使用主题自带的SEO功能，有插件的话可以关闭
     </div>
 </div>
+
+
+
 
 <h3>首页SEO</h3>
 <div class="set-plane">

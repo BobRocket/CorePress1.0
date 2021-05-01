@@ -7,7 +7,6 @@ $textcolor = imagecolorallocate($image, 0, 0, 255);//蓝色文本
 //填充函数，xy确定坐标，color颜色执行区域填充颜色
 imagefill($image, 0, 0, $bgcolor);
 $captch_code = "";//初始空值
-
 //该循环,循环取数
 for ($i = 0; $i < 4; $i++) {
     $fontsize = 8;
@@ -23,8 +22,6 @@ for ($i = 0; $i < 4; $i++) {
     $captch_code .= $fontcontent;
 }
 $_SESSION['authcode'] = $captch_code;//将变量保存再session的authcode变量中
-
-
 //该循环,循环画背景干扰的点
 /*for($m=0;$m<=600;$m++){
 

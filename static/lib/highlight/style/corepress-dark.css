@@ -91,12 +91,16 @@ pre.corepress-code-pre code {
     transition: .3s;
 }
 
-.code-bar-btm-copy {
+.code-bar-btn-copy {
     border: none;
     background: #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.05);
     padding: 2px 5px;
     border-radius: 3px;
+    cursor: pointer;
+}
+.code-bar-btn-copy-fonticon {
+    color: #fff;
     cursor: pointer;
 }
 pre[class='corepress-code-pre'] {

@@ -4,7 +4,7 @@
     <?php get_header(); ?>
 </head>
 <body>
-
+<?php get_template_part('component/body-top'); ?>
 <div id="app">
     <header>
         <div class="header-main-plane">
@@ -15,11 +15,36 @@
             </div>
         </div>
     </header>
-    <div style="min-height: 80px;width: 100%;"></div>
+    <div class="top-divider"></div>
     <main class="container">
         <div class="html-main">
             <?php
             global $set;
+            if ($set['theme']['sidebar']['other']) {
+                ?>
+                <style>
+                    body .post-info-right {
+                        display: none;
+                    }
+
+                    .post-item-thumbnail img {
+                        max-width: 336px;
+                    }
+                    .post-item-content,.post-item-info  {
+                        font-size: 16px;
+                    }
+                    .post-item h2 {
+                        font-size: 22px;
+
+                    }
+                </style>
+                <div class="post-main post-main-closesidebar" style="flex-basis: 100%;">
+                    <?php
+                    get_template_part('component/post-main-index');
+                    ?>
+                </div>
+                <?php
+            } else
             if ($set['theme']['sidebar_position'] == 1) {
                 ?>
                 <div class="post-main">

@@ -19,7 +19,7 @@ function my_comment($comment, $args, $depth)
     }
     ?>
     <li class="comment">
-    <div class="comment-item" id="li-comment-<?php comment_ID(); ?>">
+    <div class="comment-item" id="comment-<?php comment_ID(); ?>">
         <div class="comment-media">
             <div class="avatar-img">
                 <?php if (function_exists('get_avatar') && get_option('show_avatars')) {
@@ -31,7 +31,7 @@ function my_comment($comment, $args, $depth)
             <div class="media-body">
                 <?php echo __('<p class="author_name">') . get_comment_author_link() . $user . $reply . '</p>'; ?>
                 <?php if ($comment->comment_approved == '0') : ?>
-                    <em>评论等待审核...</em><br/>
+                    <b>你的评论审核中，审核通过方能显示...</b><br/>
                 <?php endif; ?>
                 <div class="comment-text">
                     <?php echo comment_text(); ?>

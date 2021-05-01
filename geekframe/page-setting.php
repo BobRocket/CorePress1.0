@@ -7,12 +7,21 @@ wp_enqueue_media();
     <div id="app" v-cloak>
         <div class="setmain">
             <div class="header-set-title">
-                <?php file_load_img('wordpress.svg') ?><h2>GorePress 设置中心</h2>
+                <div class="header-set-title-name">
+                    <?php file_load_img('wordpress.svg') ?><h2>CorePress 设置中心</h2>
+                </div>
+                <div>
+                    <el-link href="https://www.yuque.com/applek/corepress" :underline="false" target="_blank">
+                        <el-button icon="el-icon-document" size="mini">
+                            主题文档
+                        </el-button>
+                    </el-link>
+                </div>
             </div>
             <div class="set-main-plane">
                 <div class="set-main-menu">
                     <el-menu
-                            default-active="11"
+                            default-active="2"
                             class="set-main-menu-list"
                             @select="selectMenu"
                     >
@@ -56,6 +65,10 @@ wp_enqueue_media();
                             <i class="el-icon-link"></i>
                             <span slot="title">插入代码</span>
                         </el-menu-item>
+                        <el-menu-item index="12">
+                            <i class="el-icon-s-order"></i>
+                            <span slot="title">广告代码</span>
+                        </el-menu-item>
                         <el-menu-item index="7">
                             <i class="el-icon-info"></i>
                             <span slot="title">关于主题</span>
@@ -96,6 +109,9 @@ wp_enqueue_media();
                     <div v-if="menu_active==11">
                         <?php get_template_part('component/set-module'); ?>
                     </div>
+                    <div v-if="menu_active==12">
+                        <?php get_template_part('component/set-ad'); ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -107,9 +123,12 @@ wp_enqueue_media();
 file_load_js('vue.min.js');
 file_load_js('axios.min.js');
 file_load_js('base64.js');
+file_load_js('jquery.min.js');
 file_load_lib('element/index.js', 'js');
 global $set;
+
 $setJosn = base64_encode(json_encode($set));
+
 ?>
     <script>
         var set = JSON.parse(BASE64.decode('<?php echo $setJosn ?>'));
